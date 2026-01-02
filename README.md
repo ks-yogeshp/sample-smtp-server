@@ -30,6 +30,11 @@
 ```bash
 $ npm install
 ```
+## Seed Data
+
+```bash
+$ npm run seed:run
+```
 
 ## Compile and run the project
 
@@ -42,6 +47,10 @@ $ npm run start:dev
 
 # production mode
 $ npm run start:prod
+```
+## Test mail
+```bash
+$ npm run test:mail
 ```
 
 ## Run tests
