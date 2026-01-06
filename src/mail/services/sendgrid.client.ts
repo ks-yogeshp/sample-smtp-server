@@ -20,7 +20,7 @@ export class SendGridClient implements MailClient {
     },
   });
 
-  async send({ from, to, subject, text }: any): Promise<void> {
+  async send({ from, to, subject, text, attachments }: any): Promise<void> {
     Logger.log(
       'Sending email via SendGridClient using SMTP transport',
       SendGridClient.name,
@@ -30,6 +30,7 @@ export class SendGridClient implements MailClient {
       to,
       subject,
       text,
+      attachments
     });
   }
 }

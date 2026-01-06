@@ -1,12 +1,15 @@
 import { InjectQueue } from '@nestjs/bullmq';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Provider } from '@nestjs/common';
 import { Queue } from 'bullmq';
+import { ProviderConfig } from 'src/db/entitites/user.entity';
 
 @Injectable()
 export class MailQueue {
   constructor(@InjectQueue('mail') private queue: Queue) {}
 
   async enqueue(payload) {
+    
+
     await this.queue.add('sendMail', payload, {
       jobId: `mail.${payload.messageId}`,
       attempts: 3,

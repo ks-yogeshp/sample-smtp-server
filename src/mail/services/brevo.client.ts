@@ -21,7 +21,7 @@ export class BrevoClient implements MailClient {
     },
   });
 
-  async send({ from, to, subject, text }: any): Promise<void> {
+  async send({ from, to, subject, text, attachments }: any): Promise<void> {
     Logger.log(
       'Sending email via BrevoClient using SMTP transport',
       BrevoClient.name,
@@ -32,6 +32,7 @@ export class BrevoClient implements MailClient {
       to,
       subject,
       text,
+      attachments
     });
   }
 }

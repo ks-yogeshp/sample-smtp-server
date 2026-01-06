@@ -15,7 +15,7 @@ export class SmtpClient implements MailClient {
     },
   });
 
-  async send({ to, subject, text }: any): Promise<void> {
+  async send({ to, subject, text, attachments }: any): Promise<void> {
     Logger.log(
       'Sending email via MailTrapClient using SMTP transport',
       SmtpClient.name,
@@ -26,6 +26,7 @@ export class SmtpClient implements MailClient {
       to,
       subject,
       text,
+      attachments,
     });
   }
 }

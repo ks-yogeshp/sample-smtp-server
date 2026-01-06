@@ -43,11 +43,15 @@ interface IServer {
   user: string;
   pass: string;
 }
-
+interface IJwt {
+  secret: string;
+  expiresIn: string;
+}
 export interface IAppConfig {
   database: IDatabase;
   redis: IRedis;
   emailService: IEmailService;
   allowedIPs: IAllowedIPs;
   server: IServer;
+  jwt: IJwt;
 }

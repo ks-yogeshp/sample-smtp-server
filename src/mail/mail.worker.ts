@@ -1,13 +1,12 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Injectable, Logger } from '@nestjs/common';
-import { MailService } from '@sendgrid/mail';
-import { UserConfig } from 'src/db/user.entity';
 import { BrevoClient } from './services/brevo.client';
 import { SendGridClient } from './services/sendgrid.client';
 import { SmtpClient } from './services/stmp.client';
+import { Provider, ProviderConfig } from 'src/db/entitites/user.entity';
 
-@Processor('mail')
+@Processor('mail',{ concurrency: 5 })
 @Injectable()
 export class MailWorker extends WorkerHost {
   private readonly logger = new Logger(MailWorker.name);
@@ -18,6 +17,20 @@ export class MailWorker extends WorkerHost {
     private readonly smtpClient: SmtpClient,
   ) {
     super();
+  }
+  private selectProvider(config: ProviderConfig) {
+    const enabled = Object.entries(config);
+    // console.log('Enabled providers:', enabled);
+
+    const total = enabled.reduce((s, [, v]) => s + v.weight, 0);
+    let r = Math.random() * total;
+
+    for (const [provider, v] of enabled) {
+      r -= v.weight;
+      if (r <= 0) return provider;
+    }
+
+    throw new Error('No provider available');
   }
 
   async process(job: Job): Promise<void> {
@@ -31,27 +44,31 @@ export class MailWorker extends WorkerHost {
       subject,
       text,
       html,
+      attachments
     } = job.data;
-
+    const selectedProvider = this.selectProvider(config);
     this.logger.log(
       `📤 Processing mail job ${job.id} (attempt ${job.attemptsMade + 1})`,
     );
+    attachments?.forEach((att) => att.content = Buffer.from(att.content, 'base64'));
+    // console.log('attachments:', attachments);
 
     try {
-      let provider;
-      if (config === UserConfig.BREVO) {
-        provider = this.brevoClient;
-      } else if (config === UserConfig.SENDGRID) {
-        provider = this.sendgridClient;
+      let client;
+      if (selectedProvider === Provider.BREVO) {
+        client = this.brevoClient;
+      } else if (selectedProvider === Provider.SENDGRID) {
+        client = this.sendgridClient;
       } else {
-        provider = this.smtpClient;
+        client = this.smtpClient;
       }
-      await provider.send({
+      await client.send({
         from, // original sender
         to,
         subject,
         text,
         html,
+        attachments
       });
 
       this.logger.log(

@@ -1,69 +1,62 @@
 import { Logger } from "@nestjs/common";
 
-// test.js
+// test-mail.js
 const nodemailer = require('nodemailer');
 require('dotenv').config();
-const test1 = nodemailer.createTransport({
-  host: '127.0.0.1',
-  port: 2525,
-  secure: false,
-  tls: {
-    rejectUnauthorized: false,
-  },
-  auth: {
-    user: 'test1',
-    pass: process.env.SMTP_PASS,
-  },
-});
-const test2 = nodemailer.createTransport({
-  host: '127.0.0.1',
-  port: 2525,
-  secure: false,
-  tls: {
-    rejectUnauthorized: false,
-  },
-  auth: {
-    user: 'test2',
-    pass: process.env.SMTP_PASS,
-  },
-});
-const test3 = nodemailer.createTransport({
-  host: '127.0.0.1',
-  port: 2525,
-  secure: false,
-  tls: {
-    rejectUnauthorized: false,
-  },
-  auth: {
-    user: 'test3',
-    pass: process.env.SMTP_PASS,
-  },
-});
 
-async function send(t) {
+function createTransport(username) {
+  return nodemailer.createTransport({
+    host: 'ec2-13-53-122-115.eu-north-1.compute.amazonaws.com',
+    port: 587,
+    secure: false,
+    maxMessages: 10,
+    auth: {
+      user: username,
+      pass: process.env.SMTP_PASS,
+    },
+    tls: {
+      rejectUnauthorized: false, // local only
+    },
+    logger: true,
+  });
+}
+
+async function send(username) {
+  const transporter = createTransport(username);
+
   try {
-    const info = await t.sendMail({
+    const info = await transporter.sendMail({
       from: 'yogeshpatel8910@gmail.com',
       to: process.env.TO_EMAIL,
-      subject: 'TEST',
+      subject: `TEST from ${username}`,
       text: `Hi,
 Can you tell me the status of order 45678?
 Thanks`,
+      // attachments: [
+      //   {
+      //     filename: 'image.png',
+      //     path: '../../image.png', // Adjust the path as needed
+      //   },
+      //   {
+      //     filename: 'test.xlsx',
+      //     path: '../../test.xlsx', // Adjust the path as needed
+      //   }
+      // ],
     });
 
-    console.log('✅ Mail sent', info.response);
+    console.log(`✅ [${username}] Mail sent →`, info.response);
   } catch (err) {
-    if (err.code === 'EENVELOPE') {
-      console.error('❌ SMTP rejected sender:', err.response);
-    } else {
-      console.error('❌ Mail failed:', err);
-    }
+    console.error(`❌ [${username}] Failed →`, err.message);
+  } finally {
+    transporter.close();
   }
 }
+
 async function runTests() {
-  await send(test1);
-  await send(test2);
-  await send(test3);
+  const users = ['test1'];
+
+  // 🔥 Parallel execution
+  await Promise.all(users.map(send));
 }
 
 runTests();

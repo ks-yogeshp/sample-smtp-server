@@ -1,6 +1,6 @@
 import { AppConfig } from 'src/config/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { User } from './user.entity';
+import { User } from './entitites/user.entity';
 import { SeederOptions } from 'typeorm-extension';
 
 const CONFIG = AppConfig();
